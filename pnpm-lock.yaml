@@ -43,9 +43,6 @@ devDependencies:
   prettier:
     specifier: ^3.0.3
     version: 3.0.3
-  swc:
-    specifier: ^1.0.11
-    version: 1.0.11
 
 packages:
 
@@ -2503,16 +2500,6 @@ packages:
   /supports-preserve-symlinks-flag@1.0.0:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
-    dev: true
-
-  /swc@1.0.11:
-    resolution: {integrity: sha512-YbG4eija7g/ajQ0lu4P2WPgKt5zCm743VgKn+buBrXXo1IETftO2r/8VdBPhv8wpTyg3CO+VU1z2wHuL4iohmw==}
-    dependencies:
-      '@swc/cli': 0.1.62(@swc/core@1.3.95)
-      '@swc/core': 1.3.95
-    transitivePeerDependencies:
-      - '@swc/helpers'
-      - chokidar
     dev: true
 
   /tapable@2.2.1:
