@@ -182,7 +182,12 @@ export async function monitorLedgerTransactions(): Promise<Metrics> {
   const metrics: Metrics = initMetrics();
   const relayUrl: string = process.env.NOSTR_RELAY ?? '';
   console.debug('Opening connection to %s', relayUrl);
-  const ws = new WebSocket(relayUrl);
+  let ws: WebSocket;
+  try {
+    ws = new WebSocket(relayUrl);
+  } catch (e) {
+    return Promise.reject(e);
+  }
   ws.on('open', () => {
     ws.send(JSON.stringify(req));
   });
