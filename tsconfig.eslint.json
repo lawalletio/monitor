@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@alerts/*": ["./src/alerts/*"]
+    }
+  },
+  "include": [
+    "./tests/**/*",
+    "./src/**/*",
+    "./jest.config.js"
+  ]
+}
