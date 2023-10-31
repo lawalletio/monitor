@@ -1,7 +1,6 @@
 import * as alerts from '@alerts/index';
 import { Alert } from '@lib/alerts';
 
-
 function setupAlert(alert_: Alert<any>): void {
   alert_
     .monitor()

@@ -1,0 +1,77 @@
+import { WebSocket } from 'ws';
+
+import { HealthLevel } from '@lib/alerts';
+import { getCloseMessage, getTagValue, NostrEvent, REQ } from '@lib/events';
+
+type Metrics = {
+  heat: number;
+};
+
+const INTERVAL_MS = 5000;
+const SUBSCRIPTION_NAME = 'gatewayBalance';
+const MAX_HEAT = 12;
+const req: REQ = [
+  'REQ',
+  SUBSCRIPTION_NAME,
+  {
+    kinds: [31111],
+    '#d': [`balance:BTC:${process.env.GATEWAY_PUBKEY}`],
+  },
+];
+let heat: number = 0;
+
+async function monitor(): Promise<Metrics> {
+  const relayUrl: string = process.env.NOSTR_RELAY ?? '';
+  let ws: WebSocket;
+  try {
+    ws = new WebSocket(relayUrl);
+  } catch (e) {
+    return Promise.reject(e);
+  }
+  ws.on('open', () => {
+    ws.send(JSON.stringify(req));
+  });
+  ws.on('message', (data: Buffer) => {
+    const message: (string | object)[] = JSON.parse(data.toString('utf8'));
+    switch (message[0]) {
+      case 'EVENT':
+        console.debug('Received EVENT');
+        if (typeof message[2] !== 'object') throw new Error('Invalid event');
+        const event: NostrEvent = message[2] as NostrEvent;
+        const amount: number = Number(getTagValue(event, 'amount'));
+        heat = 0 < amount ? heat + 1 : 0;
+        break;
+      case 'EOSE':
+        console.debug('Received EOSE');
+        ws.send(JSON.stringify(getCloseMessage(SUBSCRIPTION_NAME)));
+        ws.close();
+        break;
+      case 'NOTICE':
+        console.warn('Received notice: %s', message[1]);
+        ws.close();
+        break;
+      default:
+    }
+  });
+  return new Promise((resolve, reject) => {
+    ws.on('close', () => resolve({ heat }));
+    ws.on('error', reject);
+    ws.on('unexpected-response', reject);
+  });
+}
+
+function analyze(metrics: Metrics): HealthLevel {
+  const level: number =
+    1 < metrics.heat ? (MAX_HEAT - metrics.heat) / MAX_HEAT : 1;
+  const reasons: string[] = [];
+  if (level < 1) {
+    reasons.push(
+      `Gateway amount has been non zero for ${
+        (metrics.heat * INTERVAL_MS) / 1000
+      } seconds`,
+    );
+  }
+  return { level, reasons };
+}
+
+export default { monitor, analyze, INTERVAL_MS };

@@ -1,7 +1,7 @@
 import { WebSocket } from 'ws';
 
 import { HealthLevel } from '@lib/alerts';
-import { getCloseMessage, NostrEvent, REQ } from '@lib/events';
+import { getCloseMessage, getTagValue, NostrEvent, REQ } from '@lib/events';
 import { wAvg } from '@lib/utils';
 
 type Metrics = {
@@ -26,11 +26,6 @@ let seenEvents: number = 0;
 let durationSum: number = 0;
 let req: REQ;
 let latestTimestamp: number;
-
-function getTagValue(event: NostrEvent, tagName: string): string | undefined {
-  const tag: string[] | undefined = event.tags.find((t) => t[0] === tagName);
-  return tag?.at(1);
-}
 
 function getReqMessage(): REQ {
   return [
