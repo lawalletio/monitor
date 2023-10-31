@@ -15,6 +15,7 @@
 !.pnp.loader.mjs
 !.prettierignore
 !.prettierrc
+!.swcrc
 
 # Pipeline
 node_modules
