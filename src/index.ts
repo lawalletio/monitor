@@ -1,10 +1,10 @@
-import { monitorLedgerTransactions } from "@alerts/ledger";
+import { monitorLedgerTransactions } from '@alerts/ledger';
 
 monitorLedgerTransactions()
   .then((metrics) => {
     console.log(new Date());
     console.dir(metrics);
-    console.log("------------------------");
+    console.log('------------------------');
   })
   .catch(console.error);
 setInterval(() => {
@@ -12,7 +12,7 @@ setInterval(() => {
     .then((metrics) => {
       console.log(new Date());
       console.dir(metrics);
-      console.log("------------------------");
+      console.log('------------------------');
     })
     .catch(console.error);
 }, 60000);
