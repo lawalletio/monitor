@@ -1,21 +1,8 @@
 import { WebSocket } from 'ws';
 
-type NostrEvent = {
-  id: string;
-  kind: number;
-  pubkey: string;
-  created_at: number;
-  content: string;
-  tags: string[][];
-  sig: string;
-};
-
-type Filter = {
-  kinds?: number[];
-  since?: number;
-  until?: number;
-  '#t': string[];
-};
+import { HealthLevel } from '@lib/alerts';
+import { getCloseMessage, NostrEvent, REQ } from '@lib/events';
+import { wAvg } from '@lib/utils';
 
 type Metrics = {
   resolved: number;
@@ -26,13 +13,6 @@ type Metrics = {
   slowTransactions: Record<string, number>;
 };
 
-type HealthLevel = {
-  level: number;
-  reasons: string[];
-};
-
-type REQ = ['REQ', string, Filter];
-
 enum EventSequence {
   START,
   END,
@@ -41,7 +21,6 @@ enum EventSequence {
 const INTERVAL_MS = 60000;
 const DURATION_THRESHOLD = 2;
 const SUBSCRIPTION_NAME = 'internalTransactions';
-const CLOSE_MESSAGE = ['CLOSE', SUBSCRIPTION_NAME];
 let transactionTimestamps: Record<string, [number, number]> = {};
 let seenEvents: number = 0;
 let durationSum: number = 0;
@@ -173,7 +152,7 @@ function handleMessage(data: Buffer, ws: WebSocket, metrics: Metrics): void {
         return;
       }
       metrics.averageDuration = durationSum / metrics.resolved;
-      ws.send(JSON.stringify(CLOSE_MESSAGE));
+      ws.send(JSON.stringify(getCloseMessage(SUBSCRIPTION_NAME)));
       ws.close();
       break;
     case 'NOTICE':
@@ -182,19 +161,6 @@ function handleMessage(data: Buffer, ws: WebSocket, metrics: Metrics): void {
       break;
     default:
   }
-}
-
-function wAvg(data: number[], w: number[]): number {
-  if (data.length !== w.length) {
-    throw new Error('Data and weights must be of same length');
-  }
-  let dSum = 0;
-  let wSum = 0;
-  for (let i = 0; i < data.length; ++i) {
-    dSum += data[i] * w[i];
-    wSum += w[i];
-  }
-  return dSum / wSum;
 }
 
 async function monitor(): Promise<Metrics> {

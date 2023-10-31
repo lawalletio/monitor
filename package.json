@@ -1,6 +1,5 @@
 {
   "name": "monitor",
-  "type": "module",
   "version": "0.0.0",
   "description": "lawallet health monitor",
   "main": "dist/index.js",

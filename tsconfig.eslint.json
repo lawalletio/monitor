@@ -2,10 +2,11 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "paths": {
-      "@alerts/*": ["./src/alerts/*"]
+      "@alerts/*": ["./src/alerts/*"],
+      "@lib/*": ["./src/lib/*"]
     }
   },
   "include": [
-    "./src/**/*",
+    "./src/**/*"
   ]
 }

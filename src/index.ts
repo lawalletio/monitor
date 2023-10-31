@@ -1,10 +1,6 @@
 import * as alerts from '@alerts/index';
+import { Alert } from '@lib/alerts';
 
-type Alert<Metric> = {
-  monitor: () => Promise<Metric>;
-  analyze: (metrics: Metric) => { level: number; reasons: string[] };
-  INTERVAL_MS: number;
-};
 
 function setupAlert(alert_: Alert<any>): void {
   alert_
