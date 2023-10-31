@@ -1,1 +1,1 @@
-export { default as ledger } from "@alerts/ledger";
+export { default as ledger } from '@alerts/ledger';

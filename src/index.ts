@@ -1,23 +1,24 @@
 import * as alerts from '@alerts/index';
 
 type Alert<Metric> = {
-  monitor: () => Promise<Metric>,
-  analyze: (metrics: Metric) => {level: number, reasons: string[]},
-  INTERVAL_MS: number,
-}
+  monitor: () => Promise<Metric>;
+  analyze: (metrics: Metric) => { level: number; reasons: string[] };
+  INTERVAL_MS: number;
+};
 
 function setupAlert(alert_: Alert<any>): void {
-  alert_.monitor()
-    .then(
-      (metrics) => {
+  alert_
+    .monitor()
+    .then((metrics) => {
       console.log(new Date());
       console.dir(metrics);
-        console.dir(alert_.analyze(metrics));
+      console.dir(alert_.analyze(metrics));
       console.log('------------------------');
     })
     .catch(console.error);
   setInterval(() => {
-    alert_.monitor()
+    alert_
+      .monitor()
       .then((metrics) => {
         console.log(new Date());
         console.dir(metrics);

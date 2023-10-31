@@ -27,9 +27,9 @@ type Metrics = {
 };
 
 type HealthLevel = {
-  level: number,
-  reasons: string[],
-}
+  level: number;
+  reasons: string[];
+};
 
 type REQ = ['REQ', string, Filter];
 
@@ -191,7 +191,7 @@ function wAvg(data: number[], w: number[]): number {
   let dSum = 0;
   let wSum = 0;
   for (let i = 0; i < data.length; ++i) {
-    dSum += data[i]*w[i];
+    dSum += data[i] * w[i];
     wSum += w[i];
   }
   return dSum / wSum;
@@ -223,21 +223,29 @@ function analyze(metrics: Metrics): HealthLevel {
   let level: number = 1;
   const totalTxs: number = metrics.resolved + metrics.unresolved;
   if (totalTxs < 1) {
-    return {level, reasons};
+    return { level, reasons };
   }
   const resolvedLvl = metrics.resolved / totalTxs;
-  const fastQty = 1 - (Object.keys(metrics.slowTransactions).length / totalTxs);
+  const fastQty = 1 - Object.keys(metrics.slowTransactions).length / totalTxs;
   let speedLvl = 1;
   if (resolvedLvl < 1) {
     if (0 < resolvedLvl) {
-      reasons.push(resolvedLvl < 0.5 ? 'Many transactions failed': 'Some transaction failed');
+      reasons.push(
+        resolvedLvl < 0.5
+          ? 'Many transactions failed'
+          : 'Some transaction failed',
+      );
     } else {
       reasons.push('ALL transactions failed');
     }
   }
   if (fastQty < 1) {
     if (0 < fastQty) {
-      reasons.push(fastQty < 0.5 ? 'Many transactions are slow': 'Some transaction are slow');
+      reasons.push(
+        fastQty < 0.5
+          ? 'Many transactions are slow'
+          : 'Some transaction are slow',
+      );
     } else {
       reasons.push('ALL transactions are slow');
     }
@@ -252,7 +260,7 @@ function analyze(metrics: Metrics): HealthLevel {
     }
   }
   level = wAvg([resolvedLvl, fastQty, speedLvl], [3, 2, 1]);
-  return {level, reasons};
+  return { level, reasons };
 }
 
-export default { monitor, analyze, INTERVAL_MS};
+export default { monitor, analyze, INTERVAL_MS };
