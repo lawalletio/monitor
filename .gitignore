@@ -3,7 +3,7 @@
 # But pay attention to certain specific ones
 !.env.example
 !.envrc
-!.eslintrc.json
+!.eslintrc
 !.gitattributes
 !.gitconfig
 !.github
