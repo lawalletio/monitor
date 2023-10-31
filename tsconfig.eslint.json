@@ -6,8 +6,6 @@
     }
   },
   "include": [
-    "./tests/**/*",
     "./src/**/*",
-    "./jest.config.js"
   ]
 }

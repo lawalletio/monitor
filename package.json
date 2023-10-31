@@ -12,8 +12,6 @@
     "node": "./dist/index.mjs"
   },
   "scripts": {
-    "test": "jest --coverage",
-    "test:watch": "jest --watch",
     "dev": "concurrently \"pnpm run build:watch\" \"pnpm run dev:watch\"",
     "dev:watch": "nodemon --watch \"dist/**/*\" -w .env -r dotenv/config -e js ./dist/index.js",
     "build": "swc src -d dist --copy-files",
@@ -21,8 +19,8 @@
     "start": "NODE_ENV=production node dist/index.js",
     "clean": "rm -rf dist .coverage",
     "reset": "pnpm clean; rm -rf node_modules pnpm-lock.yaml; pnpm install",
-    "lint": "eslint src tests --fix",
-    "prettier": "prettier src tests --write"
+    "lint": "eslint src --fix",
+    "prettier": "prettier src --write"
   },
   "keywords": [],
   "contributors": [
