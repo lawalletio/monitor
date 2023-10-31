@@ -26,6 +26,11 @@ type Metrics = {
   slowTransactions: Record<string, number>;
 };
 
+type HealthLevel = {
+  level: number,
+  reasons: string[],
+}
+
 type REQ = ['REQ', string, Filter];
 
 enum EventSequence {
@@ -33,6 +38,7 @@ enum EventSequence {
   END,
 }
 
+const INTERVAL_MS = 60000;
 const DURATION_THRESHOLD = 2;
 const SUBSCRIPTION_NAME = 'internalTransactions';
 const CLOSE_MESSAGE = ['CLOSE', SUBSCRIPTION_NAME];
@@ -178,7 +184,20 @@ function handleMessage(data: Buffer, ws: WebSocket, metrics: Metrics): void {
   }
 }
 
-export async function monitorLedgerTransactions(): Promise<Metrics> {
+function wAvg(data: number[], w: number[]): number {
+  if (data.length !== w.length) {
+    throw new Error('Data and weights must be of same length');
+  }
+  let dSum = 0;
+  let wSum = 0;
+  for (let i = 0; i < data.length; ++i) {
+    dSum += data[i]*w[i];
+    wSum += w[i];
+  }
+  return dSum / wSum;
+}
+
+async function monitor(): Promise<Metrics> {
   const metrics: Metrics = initMetrics();
   const relayUrl: string = process.env.NOSTR_RELAY ?? '';
   console.debug('Opening connection to %s', relayUrl);
@@ -198,3 +217,42 @@ export async function monitorLedgerTransactions(): Promise<Metrics> {
     ws.on('unexpected-response', reject);
   });
 }
+
+function analyze(metrics: Metrics): HealthLevel {
+  const reasons: string[] = [];
+  let level: number = 1;
+  const totalTxs: number = metrics.resolved + metrics.unresolved;
+  if (totalTxs < 1) {
+    return {level, reasons};
+  }
+  const resolvedLvl = metrics.resolved / totalTxs;
+  const fastQty = 1 - (Object.keys(metrics.slowTransactions).length / totalTxs);
+  let speedLvl = 1;
+  if (resolvedLvl < 1) {
+    if (0 < resolvedLvl) {
+      reasons.push(resolvedLvl < 0.5 ? 'Many transactions failed': 'Some transaction failed');
+    } else {
+      reasons.push('ALL transactions failed');
+    }
+  }
+  if (fastQty < 1) {
+    if (0 < fastQty) {
+      reasons.push(fastQty < 0.5 ? 'Many transactions are slow': 'Some transaction are slow');
+    } else {
+      reasons.push('ALL transactions are slow');
+    }
+  }
+  if (DURATION_THRESHOLD < metrics.maxDuration) {
+    if (DURATION_THRESHOLD * 10 < metrics.maxDuration) {
+      speedLvl = DURATION_THRESHOLD * 10 < metrics.averageDuration ? 0 : 0.25;
+      reasons.push('At least one transactions was slow');
+    } else {
+      speedLvl = DURATION_THRESHOLD < metrics.averageDuration ? 0.5 : 0.75;
+      reasons.push('At least one transaction was VERY slow');
+    }
+  }
+  level = wAvg([resolvedLvl, fastQty, speedLvl], [3, 2, 1]);
+  return {level, reasons};
+}
+
+export default { monitor, analyze, INTERVAL_MS};
