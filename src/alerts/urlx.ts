@@ -19,6 +19,7 @@ const req: REQ = [
   },
 ];
 let heat: number = 0;
+let lastAmount: number;
 
 async function monitor(): Promise<Metrics> {
   const relayUrl: string = process.env.NOSTR_RELAY ?? '';
@@ -39,7 +40,16 @@ async function monitor(): Promise<Metrics> {
         if (typeof message[2] !== 'object') throw new Error('Invalid event');
         const event: NostrEvent = message[2] as NostrEvent;
         const amount: number = Number(getTagValue(event, 'amount'));
-        heat = 0 < amount ? heat + 1 : 0;
+        if (0 < amount) {
+          if (amount < lastAmount) {
+            heat = 0 === heat ? 0 : --heat;
+          } else {
+            ++heat;
+          }
+        } else {
+          heat = 0;
+        }
+        lastAmount = amount;
         break;
       case 'EOSE':
         console.debug('Received EOSE');
@@ -66,9 +76,9 @@ function analyze(metrics: Metrics): HealthLevel {
   const reasons: string[] = [];
   if (level < 1) {
     reasons.push(
-      `Gateway amount has been non zero for ${
-        (metrics.heat * INTERVAL_MS) / 1000
-      } seconds`,
+      level < 0.5
+        ? 'Gateway amount is increasing constanlty'
+        : 'Gateway amount is increasing',
     );
   }
   return { level, reasons };
