@@ -81,7 +81,7 @@ function analyze(metrics: Metrics): HealthLevel {
         : 'Gateway amount is increasing',
     );
   }
-  return { level, reasons };
+  return { level: Math.floor(level * 100), reasons };
 }
 
 export default { monitor, analyze, INTERVAL_MS };

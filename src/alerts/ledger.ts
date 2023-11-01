@@ -184,7 +184,7 @@ function analyze(metrics: Metrics): HealthLevel {
   let level: number = 1;
   const totalTxs: number = metrics.resolved + metrics.unresolved;
   if (totalTxs < 1) {
-    return { level, reasons };
+    return { level: 100, reasons };
   }
   const resolvedLvl = metrics.resolved / totalTxs;
   const fastQty = 1 - Object.keys(metrics.slowTransactions).length / totalTxs;
@@ -194,7 +194,7 @@ function analyze(metrics: Metrics): HealthLevel {
       reasons.push(
         resolvedLvl < 0.5
           ? 'Many transactions failed'
-          : 'Some transaction failed',
+          : 'Some transactions failed',
       );
     } else {
       reasons.push('ALL transactions failed');
@@ -220,8 +220,9 @@ function analyze(metrics: Metrics): HealthLevel {
       reasons.push('At least one transaction was VERY slow');
     }
   }
-  level = wAvg([resolvedLvl, fastQty, speedLvl], [3, 2, 1]);
-  return { level, reasons };
+  const weights = 30 < totalTxs ? [3, 2, 1] : [1, 2, 1];
+  level = wAvg([resolvedLvl, fastQty, speedLvl], weights);
+  return { level: Math.floor(level * 100), reasons };
 }
 
 export default { monitor, analyze, INTERVAL_MS };
