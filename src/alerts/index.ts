@@ -1,2 +1,2 @@
-export { default as ledger } from '@alerts/ledger';
-export { default as urlx } from '@alerts/urlx';
+export { default as ledgerTransactions } from '@alerts/ledgerTransactions';
+export { default as gatewayAccount } from '@alerts/gatewayAccount';
