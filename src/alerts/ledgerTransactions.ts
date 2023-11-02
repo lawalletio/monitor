@@ -2,7 +2,6 @@ import { WebSocket } from 'ws';
 
 import { HealthLevel } from '@lib/alerts';
 import { getCloseMessage, getTagValue, NostrEvent, REQ } from '@lib/events';
-import { wAvg } from '@lib/utils';
 
 type Metrics = {
   resolved: number;
@@ -186,13 +185,14 @@ function analyze(metrics: Metrics): HealthLevel {
   if (totalTxs < 1) {
     return { level: 100, reasons };
   }
-  const resolvedLvl = metrics.resolved / totalTxs;
-  const fastQty = 1 - Object.keys(metrics.slowTransactions).length / totalTxs;
-  let speedLvl = 1;
-  if (resolvedLvl < 1) {
-    if (0 < resolvedLvl) {
+  const resolvedRate = metrics.resolved / totalTxs;
+  const fastTxsRate =
+    1 - Object.keys(metrics.slowTransactions).length / totalTxs;
+  let avgDurationAcceptance = 1;
+  if (resolvedRate < 1) {
+    if (0 < resolvedRate) {
       reasons.push(
-        resolvedLvl < 0.5
+        resolvedRate < 0.5
           ? 'Many transactions failed'
           : 'Some transactions failed',
       );
@@ -200,10 +200,10 @@ function analyze(metrics: Metrics): HealthLevel {
       reasons.push('ALL transactions failed');
     }
   }
-  if (fastQty < 1) {
-    if (0 < fastQty) {
+  if (fastTxsRate < 1) {
+    if (0 < fastTxsRate) {
       reasons.push(
-        fastQty < 0.5
+        fastTxsRate < 0.5
           ? 'Many transactions are slow'
           : 'Some transaction are slow',
       );
@@ -213,15 +213,16 @@ function analyze(metrics: Metrics): HealthLevel {
   }
   if (DURATION_THRESHOLD < metrics.maxDuration) {
     if (DURATION_THRESHOLD * 10 < metrics.maxDuration) {
-      speedLvl = DURATION_THRESHOLD * 10 < metrics.averageDuration ? 0 : 0.25;
+      avgDurationAcceptance =
+        DURATION_THRESHOLD * 10 < metrics.averageDuration ? 0 : 0.25;
       reasons.push('At least one transactions was slow');
     } else {
-      speedLvl = DURATION_THRESHOLD < metrics.averageDuration ? 0.5 : 0.75;
+      avgDurationAcceptance =
+        DURATION_THRESHOLD < metrics.averageDuration ? 0.5 : 0.75;
       reasons.push('At least one transaction was VERY slow');
     }
   }
-  const weights = 30 < totalTxs ? [3, 2, 1] : [1, 2, 1];
-  level = wAvg([resolvedLvl, fastQty, speedLvl], weights);
+  level = Math.min(resolvedRate, fastTxsRate, avgDurationAcceptance);
   return { level: Math.floor(level * 100), reasons };
 }
 
