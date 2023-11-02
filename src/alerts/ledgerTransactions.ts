@@ -86,11 +86,13 @@ function handleEvent(
 function initMetrics(): Metrics {
   seenEvents = 0;
   durationSum = 0;
-  transactionTimestamps = {};
+  transactionTimestamps = Object.fromEntries(
+    Object.entries(transactionTimestamps).filter(([_k, v]) => isNaN(v[1])),
+  );
   req = getReqMessage();
   return {
     resolved: 0,
-    unresolved: 0,
+    unresolved: Object.keys(transactionTimestamps).length,
     maxDuration: Number.NEGATIVE_INFINITY,
     minDuration: Number.POSITIVE_INFINITY,
     averageDuration: 0,
