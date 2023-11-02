@@ -72,7 +72,9 @@ async function monitor(): Promise<Metrics> {
 
 function analyze(metrics: Metrics): HealthLevel {
   const level: number =
-    1 < metrics.heat ? (MAX_HEAT - metrics.heat) / MAX_HEAT : 1;
+    1 < metrics.heat
+      ? (Math.max(MAX_HEAT, metrics.heat) - metrics.heat) / MAX_HEAT
+      : 1;
   const reasons: string[] = [];
   if (level < 1) {
     reasons.push(
