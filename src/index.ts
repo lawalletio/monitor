@@ -33,6 +33,7 @@ function runAlert(alertEntry: [string, Alert<any>]): void {
       if (SUCCESS_LEVEL === healthLevel.level) {
         REPORTS[alertName].lastSuccess = now;
         delete REPORTS[alertName].inestableSince;
+        delete REPORTS[alertName].failingSince;
       } else if (healthLevel.level < INESTABLE_THRESHOLD) {
         if (!REPORTS[alertName].inestableSince) {
           REPORTS[alertName].inestableSince = now;
