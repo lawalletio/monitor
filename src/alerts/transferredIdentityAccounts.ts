@@ -82,7 +82,7 @@ async function monitor(): Promise<Metrics> {
         const subName = message[1] as string;
         console.debug('Received EOSE for: %s', subName);
         ws.send(JSON.stringify(getCloseMessage(subName)));
-        if (SUBSCRIPTION_NAME === subName) {
+        if (SUBSCRIPTION_NAME === subName || totalIdentityTransfers === 0) {
           ws.close();
         }
         break;
