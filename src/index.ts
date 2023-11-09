@@ -80,7 +80,7 @@ app.use(helmet());
 app.use(express.json());
 app.use(cors());
 
-app.route('/').get((_req, res, _next) => {
+app.route('/status').get((_req, res, _next) => {
   const body = Object.fromEntries(
     Object.entries(REPORTS).map(([k, v]) => [
       k,
