@@ -50,5 +50,13 @@
     "eslint-import-resolver-typescript": "^3.6.1",
     "nodemon": "^3.0.1",
     "prettier": "^3.0.3"
+  },
+  "overrides": {
+    "nostr-tools": "npm:@lawallet/nostr-tools"
+  },
+  "pnpm": {
+    "overrides": {
+      "nostr-tools": "npm:@lawallet/nostr-tools"
+    }
   }
 }
